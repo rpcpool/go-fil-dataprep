@@ -46,6 +46,13 @@ var Cmd = &cli.Command{
 			Value:    "__metadata.csv",
 			Usage:    "metadata file name. ",
 		},
+		&cli.BoolFlag{
+			Name:     "dry-run",
+			Aliases:  []string{"d"},
+			Required: false,
+			Usage:    "optional dry run. Do not write split CARs to disk (but still write metadata).",
+			Value:    false,
+		},
 	},
 }
 
@@ -120,6 +127,7 @@ func filDataPrep(c *cli.Context) error {
 	o := c.String("output")
 	meta := c.String("metadata")
 	s := c.Int("size")
+	dryRun := c.Bool("dry-run")
 
 	var filenamePrefix string
 	if o != "" {
@@ -131,7 +139,13 @@ func filDataPrep(c *cli.Context) error {
 	go func() {
 		defer wg.Done()
 
-		carPieceFilesMeta, err := carlet.SplitAndCommp(rout, s, filenamePrefix)
+		var carPieceFilesMeta *carlet.CarPiecesAndMetadata
+		var err error
+		if dryRun {
+			carPieceFilesMeta, err = carlet.SplitAndCommpDryRun(rout, s, filenamePrefix)
+		} else {
+			carPieceFilesMeta, err = carlet.SplitAndCommp(rout, s, filenamePrefix)
+		}
 		if err != nil {
 			panic(fmt.Errorf("split and commp failed : %s", err))
 		}

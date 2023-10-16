@@ -84,9 +84,6 @@ func splitAndCommpAction(c *cli.Context) error {
 		return err
 	}
 	defer metaFile.Close()
-	if err != nil {
-		return err
-	}
 
 	csvWriter := csv.NewWriter(metaFile)
 	err = csvWriter.Write([]string{
