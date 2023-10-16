@@ -171,15 +171,13 @@ func filDataPrep(c *cli.Context) error {
 			}
 		}
 		{
-			// save also as yaml
+			// save also as yaml, which will include the whole car pieces metadata (including the original car header)
 			yamlFilename := strings.TrimSuffix(meta, filepath.Ext(meta)) + ".yaml"
 			yamlFile, err := os.Create(yamlFilename)
 			if err != nil {
 				panic(fmt.Errorf("failed to create yaml metadata file: %s", err))
 			}
 			defer yamlFile.Close()
-
-			// write all the car files as yaml
 
 			yamlWriter := yaml.NewEncoder(yamlFile)
 			var carFilesYaml struct {
