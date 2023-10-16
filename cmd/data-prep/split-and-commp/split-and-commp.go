@@ -61,7 +61,7 @@ func splitAndCommpAction(c *cli.Context) error {
 		filenamePrefix = fmt.Sprintf("%s-", output)
 	}
 
-	carFiles, err := carlet.SplitAndCommp(fi, size, filenamePrefix)
+	carPieceFilesMeta, err := carlet.SplitAndCommp(fi, size, filenamePrefix)
 	if err != nil {
 		return err
 	}
@@ -88,7 +88,7 @@ func splitAndCommpAction(c *cli.Context) error {
 		return err
 	}
 	defer csvWriter.Flush()
-	for _, cf := range carFiles.CarPieces {
+	for _, cf := range carPieceFilesMeta.CarPieces {
 		err = csvWriter.Write([]string{
 			time.Now().Format(time.RFC3339),
 			cf.Name,
@@ -114,9 +114,9 @@ func splitAndCommpAction(c *cli.Context) error {
 
 		yamlWriter := yaml.NewEncoder(yamlFile)
 		var carFilesYaml struct {
-			CarPieces *carlet.CarFilesAndMetadata `yaml:"car_pieces"`
+			CarPiecesMeta *carlet.CarPiecesAndMetadata `yaml:"car_pieces_meta"`
 		}
-		carFilesYaml.CarPieces = carFiles
+		carFilesYaml.CarPiecesMeta = carPieceFilesMeta
 		err = yamlWriter.Encode(carFilesYaml)
 		if err != nil {
 			panic(fmt.Errorf("failed to write yaml: %s", err))

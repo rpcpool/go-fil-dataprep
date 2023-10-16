@@ -131,7 +131,7 @@ func filDataPrep(c *cli.Context) error {
 	go func() {
 		defer wg.Done()
 
-		carFiles, err := carlet.SplitAndCommp(rout, s, filenamePrefix)
+		carPieceFilesMeta, err := carlet.SplitAndCommp(rout, s, filenamePrefix)
 		if err != nil {
 			panic(fmt.Errorf("split and commp failed : %s", err))
 		}
@@ -156,7 +156,7 @@ func filDataPrep(c *cli.Context) error {
 			panic(fmt.Errorf("failed to write csv header: %s", err))
 		}
 		defer csvWriter.Flush()
-		for _, cf := range carFiles.CarPieces {
+		for _, cf := range carPieceFilesMeta.CarPieces {
 			err = csvWriter.Write([]string{
 				time.Now().UTC().Format(time.RFC3339),
 				cf.Name,
@@ -183,11 +183,11 @@ func filDataPrep(c *cli.Context) error {
 
 			yamlWriter := yaml.NewEncoder(yamlFile)
 			var carFilesYaml struct {
-				RootCid   string                      `yaml:"root_cid"`
-				CarPieces *carlet.CarFilesAndMetadata `yaml:"car_pieces"`
+				RootCid       string                       `yaml:"root_cid"`
+				CarPiecesMeta *carlet.CarPiecesAndMetadata `yaml:"car_pieces_meta"`
 			}
 			carFilesYaml.RootCid = rcid.String()
-			carFilesYaml.CarPieces = carFiles
+			carFilesYaml.CarPiecesMeta = carPieceFilesMeta
 			err = yamlWriter.Encode(carFilesYaml)
 			if err != nil {
 				panic(fmt.Errorf("failed to write yaml: %s", err))
