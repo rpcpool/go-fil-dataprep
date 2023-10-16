@@ -5,15 +5,17 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/anjor/carlet"
 	"github.com/urfave/cli/v2"
+	"gopkg.in/yaml.v2"
 )
 
 var Cmd = &cli.Command{
-
 	Name:    "split-and-commp",
 	Usage:   "Split CAR and calculate commp",
 	Aliases: []string{"sac"},
@@ -44,7 +46,6 @@ var splitAndCommpFlags = []cli.Flag{
 }
 
 func splitAndCommpAction(c *cli.Context) error {
-
 	fi, err := getReader(c)
 	if err != nil {
 		return err
@@ -65,25 +66,61 @@ func splitAndCommpAction(c *cli.Context) error {
 		return err
 	}
 
-	f, err := os.Create(meta)
-	defer f.Close()
+	metaFile, err := os.Create(meta)
+	if err != nil {
+		return err
+	}
+	defer metaFile.Close()
 	if err != nil {
 		return err
 	}
 
-	w := csv.NewWriter(f)
-	err = w.Write([]string{"timestamp", "car file", "piece cid", "padded piece size"})
+	csvWriter := csv.NewWriter(metaFile)
+	err = csvWriter.Write([]string{
+		"timestamp",
+		"car file",
+		"piece cid",
+		"padded piece size",
+		"header size",
+		"content size",
+	})
 	if err != nil {
 		return err
 	}
-	defer w.Flush()
-	for _, c := range carFiles {
-		err = w.Write([]string{
+	defer csvWriter.Flush()
+	for _, cf := range carFiles.CarPieces {
+		err = csvWriter.Write([]string{
 			time.Now().Format(time.RFC3339),
-			c.Name,
-			c.CommP.String(),
-			strconv.FormatUint(c.PaddedSize, 10),
+			cf.Name,
+			cf.CommP.String(),
+			strconv.FormatUint(cf.PaddedSize, 10),
+			strconv.FormatUint(cf.HeaderSize, 10),
+			strconv.FormatUint(cf.ContentSize, 10),
 		})
+		if err != nil {
+			return fmt.Errorf("failed to write csv row: %s", err)
+		}
+	}
+	{
+		// save also as yaml
+		yamlFilename := strings.TrimSuffix(meta, filepath.Ext(meta)) + ".yaml"
+		yamlFile, err := os.Create(yamlFilename)
+		if err != nil {
+			panic(fmt.Errorf("failed to create yaml metadata file: %s", err))
+		}
+		defer yamlFile.Close()
+
+		// write all the car files as yaml
+
+		yamlWriter := yaml.NewEncoder(yamlFile)
+		var carFilesYaml struct {
+			CarPieces *carlet.CarFilesAndMetadata `yaml:"car_pieces"`
+		}
+		carFilesYaml.CarPieces = carFiles
+		err = yamlWriter.Encode(carFilesYaml)
+		if err != nil {
+			panic(fmt.Errorf("failed to write yaml: %s", err))
+		}
 	}
 	return nil
 }
@@ -96,7 +133,6 @@ func getReader(c *cli.Context) (io.Reader, error) {
 			return nil, err
 		}
 		return fi, nil
-
 	}
 	return os.Stdin, nil
 }

@@ -25,14 +25,6 @@ github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4/go.mod h1:ybxpYRF
 github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d/go.mod h1:rBZYJk541a8SKzHPHnH3zbiI+7dagKZ0cgpgrD7Fyho=
 github.com/anjor/anelace v0.0.0-20230330084912-e7a70b075964 h1:SnXs3+7G5cxyrWnmjb3ogeoC5w+asUtC8rDzpNbQCik=
 github.com/anjor/anelace v0.0.0-20230330084912-e7a70b075964/go.mod h1:yfplZLfw16a1nvufmGLkVtpJXmFdtPpYp0MGSHItATM=
-github.com/anjor/carlet v0.0.0-20230505101327-2ef1c28faa16 h1:EEhoZ/V3cgZ1I/tTQD1cz8QmAi3uPgLG6fwWGALrXT4=
-github.com/anjor/carlet v0.0.0-20230505101327-2ef1c28faa16/go.mod h1:sTpcN668YLQ1cvCT2RcIxifc/soFheI9wbNeDGCJX74=
-github.com/anjor/carlet v0.0.0-20230511201044-6605618601a5 h1:fQ5/r5dju88baq1lqtEOWsr8Zo2mOhs712jspsgy0MM=
-github.com/anjor/carlet v0.0.0-20230511201044-6605618601a5/go.mod h1:sTpcN668YLQ1cvCT2RcIxifc/soFheI9wbNeDGCJX74=
-github.com/anjor/carlet v0.0.0-20230606223552-f3beca82dfa0 h1:o7qYsmyzBnQ072cDltv+xtz9Sqhi9pF/qLe11FM38PY=
-github.com/anjor/carlet v0.0.0-20230606223552-f3beca82dfa0/go.mod h1:sTpcN668YLQ1cvCT2RcIxifc/soFheI9wbNeDGCJX74=
-github.com/anjor/carlet v0.0.0-20230716220206-4f4b6bc5eed6 h1:uLi1JJ/wPzj/YIG0HOZDfwpUDeh0zR4hXAQrl8zj//4=
-github.com/anjor/carlet v0.0.0-20230716220206-4f4b6bc5eed6/go.mod h1:sTpcN668YLQ1cvCT2RcIxifc/soFheI9wbNeDGCJX74=
 github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239/go.mod h1:2FmKhYUyUczH0OGQWaF5ceTx0UBShxjsH6f8oGKYe2c=
 github.com/apache/thrift v0.12.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=
 github.com/apache/thrift v0.13.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=
@@ -797,6 +789,8 @@ github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af/go.mod h1:XWv6So
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/rogpeppe/go-internal v1.6.1 h1:/FiVV8dS/e+YqF2JvO3yXRFbBLTIuSDkuC7aBOAvL+k=
 github.com/rogpeppe/go-internal v1.6.1/go.mod h1:xXDCJY+GAPziupqXw64V24skbSoqbTEfhy4qGm1nDQc=
+github.com/rpcpool/carlet v0.0.2 h1:EgDqyG5nzJRp+oi7Df+N1RCu9XbkxXzAlSqPyHnRuZ0=
+github.com/rpcpool/carlet v0.0.2/go.mod h1:sTpcN668YLQ1cvCT2RcIxifc/soFheI9wbNeDGCJX74=
 github.com/russross/blackfriday v1.5.2/go.mod h1:JO/DiYxRf+HjHt06OyowR9PTA263kcR/rfWxYHBV53g=
 github.com/russross/blackfriday/v2 v2.0.1/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/russross/blackfriday/v2 v2.1.0 h1:JIOH55/0cWyOuilr9/qlrm0BSXldqnqwMsf35Ld67mk=
