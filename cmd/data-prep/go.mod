@@ -1,16 +1,19 @@
 module github.com/anjor/go-fil-dataprep/cmd/data-prep
 
-go 1.19
+go 1.20
+
+replace github.com/anjor/carlet => github.com/rpcpool/carlet v0.0.4
 
 require (
 	github.com/anjor/anelace v0.0.0-20230330084912-e7a70b075964
-	github.com/anjor/carlet v0.0.0-20230716220206-4f4b6bc5eed6
+	github.com/anjor/carlet v0.0.0-00010101000000-000000000000
 	github.com/ipfs/go-cid v0.4.1
 	github.com/ipfs/go-ipld-format v0.2.0
 	github.com/ipfs/go-merkledag v0.5.1
 	github.com/ipfs/go-unixfs v0.4.5
 	github.com/multiformats/go-multihash v0.2.1
 	github.com/urfave/cli/v2 v2.25.3
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (

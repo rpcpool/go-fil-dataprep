@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -16,6 +17,7 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-merkledag"
 	"github.com/urfave/cli/v2"
+	"gopkg.in/yaml.v2"
 )
 
 var Cmd = &cli.Command{
@@ -44,12 +46,19 @@ var Cmd = &cli.Command{
 			Value:    "__metadata.csv",
 			Usage:    "metadata file name. ",
 		},
+		&cli.BoolFlag{
+			Name:     "dry-run",
+			Aliases:  []string{"d"},
+			Required: false,
+			Usage:    "optional dry run. Do not write split CARs to disk (but still write metadata).",
+			Value:    false,
+		},
 	},
 }
 
 func filDataPrep(c *cli.Context) error {
 	if !c.Args().Present() {
-		return fmt.Errorf("expected some data to be processed, found none.\n")
+		return fmt.Errorf("expected some data to be processed, found none")
 	}
 
 	var fileReaders []io.Reader
@@ -74,7 +83,7 @@ func filDataPrep(c *cli.Context) error {
 
 	anl, errs := anelace.NewAnelaceWithWriters(werr, wout)
 	if errs != nil {
-		return fmt.Errorf("unexpected error: %s\n", errs)
+		return fmt.Errorf("unexpected error: %s", errs)
 	}
 	anl.SetMultipart(true)
 
@@ -116,8 +125,9 @@ func filDataPrep(c *cli.Context) error {
 	}()
 
 	o := c.String("output")
-	m := c.String("metadata")
+	meta := c.String("metadata")
 	s := c.Int("size")
+	dryRun := c.Bool("dry-run")
 
 	var filenamePrefix string
 	if o != "" {
@@ -129,33 +139,71 @@ func filDataPrep(c *cli.Context) error {
 	go func() {
 		defer wg.Done()
 
-		carFiles, err := carlet.SplitAndCommp(rout, s, filenamePrefix)
+		var carPieceFilesMeta *carlet.CarPiecesAndMetadata
+		var err error
+		if dryRun {
+			carPieceFilesMeta, err = carlet.SplitAndCommpDryRun(rout, s, filenamePrefix)
+		} else {
+			carPieceFilesMeta, err = carlet.SplitAndCommp(rout, s, filenamePrefix)
+		}
 		if err != nil {
-			fmt.Printf("split and commp failed : %s\n", err)
-			return
+			panic(fmt.Errorf("split and commp failed : %s", err))
 		}
 
-		f, err := os.Create(m)
-		defer f.Close()
+		metaFile, err := os.Create(meta)
 		if err != nil {
-			fmt.Printf("creating metadata file failed: %s\n", m)
-			return
+			panic(fmt.Errorf("failed to create metadata file: %s", err))
 		}
-		w := csv.NewWriter(f)
-		err = w.Write([]string{"timestamp", "car file", "root_cid", "piece cid", "padded piece size"})
+		defer metaFile.Close()
+
+		csvWriter := csv.NewWriter(metaFile)
+		err = csvWriter.Write([]string{
+			"timestamp",
+			"car file",
+			"root_cid",
+			"piece cid",
+			"padded piece size",
+			"header size",
+			"content size",
+		})
 		if err != nil {
-			fmt.Printf("failed to write csv header\n")
-			return
+			panic(fmt.Errorf("failed to write csv header: %s", err))
 		}
-		defer w.Flush()
-		for _, c := range carFiles {
-			err = w.Write([]string{
+		defer csvWriter.Flush()
+		for _, cf := range carPieceFilesMeta.CarPieces {
+			err = csvWriter.Write([]string{
 				time.Now().UTC().Format(time.RFC3339),
-				c.Name,
+				cf.Name,
 				rcid.String(),
-				c.CommP.String(),
-				strconv.FormatUint(c.PaddedSize, 10),
+				cf.CommP.String(),
+				strconv.FormatUint(cf.PaddedSize, 10),
+				strconv.FormatUint(cf.HeaderSize, 10),
+				strconv.FormatUint(cf.ContentSize, 10),
 			})
+			if err != nil {
+				panic(fmt.Errorf("failed to write csv row: %s", err))
+			}
+		}
+		{
+			// save also as yaml, which will include the whole car pieces metadata (including the original car header)
+			yamlFilename := strings.TrimSuffix(meta, filepath.Ext(meta)) + ".yaml"
+			yamlFile, err := os.Create(yamlFilename)
+			if err != nil {
+				panic(fmt.Errorf("failed to create yaml metadata file: %s", err))
+			}
+			defer yamlFile.Close()
+
+			yamlWriter := yaml.NewEncoder(yamlFile)
+			var carFilesYaml struct {
+				RootCid       string                       `yaml:"root_cid"`
+				CarPiecesMeta *carlet.CarPiecesAndMetadata `yaml:"car_pieces_meta"`
+			}
+			carFilesYaml.RootCid = rcid.String()
+			carFilesYaml.CarPiecesMeta = carPieceFilesMeta
+			err = yamlWriter.Encode(carFilesYaml)
+			if err != nil {
+				panic(fmt.Errorf("failed to write yaml: %s", err))
+			}
 		}
 	}()
 
@@ -179,15 +227,12 @@ func writeNode(nodes []*merkledag.ProtoNode, wout *io.PipeWriter) {
 				if _, err := wout.Write(d); err != nil {
 					fmt.Printf("failed to write car: %s\n", err)
 				}
-
 			}
 		}
-
 	}
 }
 
 func getRoots(rerr *io.PipeReader) []roots {
-
 	var rs []roots
 	bs, _ := io.ReadAll(rerr)
 	e := string(bs)
